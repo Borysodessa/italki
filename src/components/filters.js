@@ -1,6 +1,9 @@
+import { useState } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import { countryfilter } from "../redux/action";
+
 import styles from "../styles/filter.module.css";
 import { Arrow } from "./arrow";
-import { useState } from "react";
 
 export function Filter({
   targetName = (item) => item,
@@ -19,16 +22,18 @@ export function Filter({
   const [substr, setSubstr] = useState("");
   const [isRotated, setIsRotated] = useState(false);
 
-  function selectTargetValue(i) {
+  function selectTargetText(i) {
     if (selectedTarget.includes(i)) {
       setSelectedTarget(selectedTarget.filter((el) => el !== i));
     } else {
-      setSelectedTarget([...selectedTarget, ...[i]]);
+      console.log(">>>>", { selectedTarget, i });
+      setSelectedTarget([...selectedTarget, i]);
     }
   }
 
   function filtersMenuButton() {
     setOpenButton(() => !openButton);
+
     setIsRotated(!isRotated);
   }
 
@@ -71,11 +76,10 @@ export function Filter({
 
               {teachers.map((item) => {
                 return (
-                  <div className={styles.renderWrap}>
+                  <div key={item} className={styles.renderWrap}>
                     <div
-                      key={item}
                       className={styles.renderItemWrap}
-                      onClick={() => selectTargetValue(item)}
+                      onClick={() => selectTargetText(item)}
                     >
                       {renderItem(item)}
                     </div>

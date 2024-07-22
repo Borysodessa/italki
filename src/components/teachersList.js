@@ -1,5 +1,9 @@
-import styles from "../styles/teachersList.module.css";
+import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
+import { countryfilter } from "../redux/action";
+import { languageFilter } from "../redux/action";
+
+import styles from "../styles/teachersList.module.css";
 
 import { Teacher } from "./teacher";
 import { Filter } from "./filters";
@@ -28,21 +32,33 @@ export function TeacherList({
   packageMin,
   setPackageMin,
 }) {
-  const [selectedLanguage, setSelectedLanguage] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState([]);
+  // const [selectedLanguage, setSelectedLanguage] = useState([]);
+  // const [selectedCountry, setSelectedCountry] = useState([]);
 
   const [change, setChange] = useState({
     selectButton: "orderByLessons",
     rotate: false,
   });
 
+  const country = useSelector((state) => {
+    return state.filters.selectedCountry;
+  });
+  const language = useSelector((state) => {
+    return state.filters.selectedLanguage;
+  });
+
+  const dispatch = useDispatch();
+
+  const selectTargetCountry = (i) => dispatch(countryfilter(i));
+  const selectTargetLanguage = (i) => dispatch(languageFilter(i));
+
   const changeRotate = change.rotate;
   const selectedButton = change.selectButton;
 
-  function clear() {
-    setSelectedCountry([]);
-    setSelectedLanguage([]);
-  }
+  // function clear() {
+  //   setSelectedCountry([]);
+  //   setSelectedLanguage([]);
+  // }
 
   // const filteredTeachersByLanguage = jsonData.filter((teacher) => {
   //   return selectedLanguage.every((el) => {
@@ -72,14 +88,13 @@ export function TeacherList({
   //   });
   // }
 
-  const anyFilter = filteredTeachersByLanguage(
-    jsonData,
-    selectedLanguage
-  ).filter((teacher) => {
-    return selectedCountry.length === 0
-      ? filteredTeachersByLanguage
-      : selectedCountry.includes(teacher.user_info.living_country_id);
-  });
+  const anyFilter = filteredTeachersByLanguage(jsonData, language).filter(
+    (teacher) => {
+      return country.length === 0
+        ? filteredTeachersByLanguage
+        : country.includes(teacher.user_info.living_country_id);
+    }
+  );
 
   const anySorting = sorting(anyFilter, selectedButton, changeRotate);
 
@@ -90,14 +105,14 @@ export function TeacherList({
   );
 
   function numberOfTeachersByLanguage(filteredTeachersByLanguage) {
-    if (selectedLanguage.length > 0) {
+    if (language.length > 0) {
       return filteredTeachersByLanguage.length;
     }
     return 0;
   }
 
   const numberOfTeachersByCountry = jsonData.filter((teacher) => {
-    return selectedCountry.includes(teacher.user_info.living_country_id);
+    return country.includes(teacher.user_info.living_country_id);
   }).length;
 
   const countryStyles = { left: 30 };
@@ -107,39 +122,35 @@ export function TeacherList({
     <div>
       <div className={styles.filtersWrap}>
         <Filter
-          change={change}
-          setChange={setChange}
           filterMenuStyles={countryStyles}
           numberOfTeachers={numberOfTeachersByCountry}
           renderItem={countryFlag}
           targetName={countryName}
           buttonLogo={languageLogo}
-          selectedByCriterion={criterionCountry(selectedCountry)}
+          selectedByCriterion={criterionCountry(country)}
           criteria={"Country"}
           buttonName={"Teacher is from"}
           teachersData={сountryData(jsonData)}
-          selectedTarget={selectedCountry}
-          setSelectedTarget={setSelectedCountry}
+          selectedTarget={country}
+          setSelectedTarget={selectTargetCountry}
         />
         <Filter
-          change={change}
-          setChange={setChange}
           filterMenuStyles={languageStyles}
           numberOfTeachers={numberOfTeachersByLanguage(
             filteredTeachersByLanguage
           )}
           buttonLogo={countryLogo}
-          selectedByCriterion={criterionLanguage(selectedLanguage)}
+          selectedByCriterion={criterionLanguage(language)}
           criteria={"Language"}
           buttonName={"language"}
-          selectedTarget={selectedLanguage}
-          setSelectedTarget={setSelectedLanguage}
+          selectedTarget={language}
+          setSelectedTarget={selectTargetLanguage}
           teachersData={languageData(jsonData)}
         />
 
         <Sort change={change} setChange={setChange} />
 
-        <ClearAll clear={clear} />
+        <ClearAll />
 
         <FilterByPrice
           setPackageMin={setPackageMin}
@@ -148,6 +159,7 @@ export function TeacherList({
           packageMax={packageMax}
         />
       </div>
+
       <div className={styles.flexWrap}>
         <div className={styles.teacherContainer}>
           {teachers.map((teacher) => (
@@ -157,7 +169,7 @@ export function TeacherList({
             >
               <Teacher
                 teacher={teacher}
-                selectedCountry={selectedCountry}
+                selectedCountry={country}
                 key={teacher.user_info.user_id}
                 setSelectedTeacher={setSelectedTeacher}
               />
